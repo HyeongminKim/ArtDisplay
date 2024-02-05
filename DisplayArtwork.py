@@ -1,10 +1,12 @@
 wallpaper_window = None
-label = None
+viewer = None
+status = None
 
 try:
     from os import environ
     from tkinter import Tk, Label
     from PIL import Image, ImageTk
+    from urllib.error import HTTPError, URLError
     import urllib.request
     import io
 except (ImportError, ModuleNotFoundError) as error:
@@ -33,16 +35,30 @@ def downloadSplashSource():
     print(f"Display artwork target: {backgroundSource}")
     try:
         with urllib.request.urlopen(backgroundSource) as url_parse:
+            status.place_forget()
             return url_parse.read()
     except (HTTPError) as error:
         print("error: Background source could not download at this time.")
         print(f"respond status code: {error.code}")
+        status.place(relx=0.5, rely=0.5, anchor='center')
+        status['text'] = f"{error}"
+        return None
+    except (URLError) as error:
+        print(error)
+        status.place(relx=0.5, rely=0.5, anchor='center')
+        status['text'] = f"{error}"
         return None
 
 def refreshSplashImage():
-    newImage = ImageTk.PhotoImage(Image.open(io.BytesIO(downloadSplashSource())))
-    label['image'] = newImage
-    label.image = newImage
+    cache = downloadSplashSource()
+    if cache is None:
+        print("error: unable to cast type None to Object")
+        wallpaper_window.after(updateInterval, refreshSplashImage)
+        return
+
+    newImage = ImageTk.PhotoImage(Image.open(io.BytesIO(cache)))
+    viewer['image'] = newImage
+    viewer.image = newImage
     wallpaper_window.after(updateInterval, refreshSplashImage)
 
 wallpaper_window = Tk()
@@ -50,8 +66,10 @@ wallpaper_window.geometry("1024x768")
 wallpaper_window.title("")
 wallpaper_window.config(cursor="none")
 
-label = Label(wallpaper_window, text="")
-label.place(relx=0.5, rely=0.5, anchor='center')
+viewer = Label(wallpaper_window, text="")
+viewer.place(relx=0.5, rely=0.5, anchor='center')
+
+status = Label(wallpaper_window, text="", foreground='#FF0000', background='#000000', font=('Helvetica', 18))
 
 if (fullscreen is not None and fullscreen == "true"):
     wallpaper_window.attributes('-fullscreen', True)
