@@ -48,6 +48,7 @@ def refreshSplashImage():
 wallpaper_window = Tk()
 wallpaper_window.geometry("1024x768")
 wallpaper_window.title("")
+wallpaper_window.config(cursor="none")
 
 label = Label(wallpaper_window, text="")
 label.place(relx=0.5, rely=0.5, anchor='center')
