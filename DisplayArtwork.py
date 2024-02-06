@@ -14,7 +14,7 @@ except (ImportError, ModuleNotFoundError) as error:
     exit(1)
 
 # usage: `export artwork_res=0` or write .bash_profile to configure artwork size
-updateInterval = environ.get('artwork_inv')
+updateInterval = environ.get('artwork_inv') # unit: minutes
 fullscreen = environ.get('artwork_fs')
 resolutionX = environ.get('artwork_resX')
 resolutionY = environ.get('artwork_resY')
@@ -23,11 +23,19 @@ if (resolutionX is None or resolutionY is None or updateInterval is None):
     print("resolution vector does not configured yet. Please set resolution vector first!")
     print("Splash image reload interval was not configured!")
     print("supported environ values:")
-    print("\tartwork_inv\tupdate splash image interval")
+    print("\tartwork_inv\tupdate splash image every n minutes")
     print("\tartwork_fs\tmake fullscreen display artwork")
     print("\tartwork_resX\tsplash image X")
     print("\tartwork_resY\tsplash image Y")
     exit(1)
+else:
+    try:
+        resolutionX = int(resolutionX)
+        resolutionY = int(resolutionY)
+        updateInterval = (int(updateInterval) * 1000 * 60)
+    except (ValueError) as error:
+        print(error)
+        exit(1)
 
 def downloadSplashSource():
     backgroundSource = f"https://unsplash.it/{resolutionX}/{resolutionY}/?random"
