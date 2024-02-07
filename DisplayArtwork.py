@@ -75,7 +75,7 @@ try:
     wallpaper_window.title("")
     wallpaper_window.config(cursor="none")
 except (TclError) as error:
-    print(f'{error} and no $DISPLAY environment variable. Please set $DISPLAY value like ":0.0"')
+    print(f'{error}. Please update $DISPLAY variable like ":0.0" and make sure get-default is graphical.target')
     exit(1)
 
 viewer = Label(wallpaper_window, text="")
