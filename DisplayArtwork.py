@@ -4,7 +4,7 @@ status = None
 
 try:
     from os import environ
-    from tkinter import Tk, Label
+    from tkinter import Tk, Label, TclError
     from PIL import Image, ImageTk
     from urllib.error import HTTPError, URLError
     import urllib.request
@@ -69,10 +69,14 @@ def refreshSplashImage():
     viewer.image = newImage
     wallpaper_window.after(updateInterval, refreshSplashImage)
 
-wallpaper_window = Tk()
-wallpaper_window.geometry("1024x768")
-wallpaper_window.title("")
-wallpaper_window.config(cursor="none")
+try:
+    wallpaper_window = Tk()
+    wallpaper_window.geometry("1024x768")
+    wallpaper_window.title("")
+    wallpaper_window.config(cursor="none")
+except (TclError) as error:
+    print(f'{error} and no $DISPLAY environment variable. Please set $DISPLAY value like ":0.0"')
+    exit(1)
 
 viewer = Label(wallpaper_window, text="")
 viewer.place(relx=0.5, rely=0.5, anchor='center')
