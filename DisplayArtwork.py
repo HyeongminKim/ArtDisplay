@@ -3,13 +3,17 @@ viewer = None
 status = None
 
 try:
+    import platform
+    if platform.system() == 'Windows':
+        raise OSError(f'{platform.system()} system does not support.')
+
     from os import environ
     from tkinter import Tk, Label, TclError
     from PIL import Image, ImageTk
     from urllib.error import HTTPError, URLError
     import urllib.request
     import io
-except (ImportError, ModuleNotFoundError) as error:
+except (ImportError, ModuleNotFoundError, OSError) as error:
     print(error)
     exit(1)
 
@@ -32,7 +36,7 @@ else:
     try:
         resolutionX = int(resolutionX)
         resolutionY = int(resolutionY)
-        updateInterval = (int(updateInterval) * 1000 * 60)
+        updateInterval = (int(updateInterval) * 1000)
     except (ValueError) as error:
         print(error)
         exit(1)
@@ -61,13 +65,19 @@ def refreshSplashImage():
     cache = downloadSplashSource()
     if cache is None:
         print("error: unable to cast type None to Object")
-        wallpaper_window.after(updateInterval, refreshSplashImage)
+        if updateInterval < 5000:
+            print(f"refresh rate: 5 seconds.")
+            wallpaper_window.after(5000, refreshSplashImage)
+        else:
+            print(f"refresh rate: {updateInterval / 1000} seconds.")
+            wallpaper_window.after(updateInterval, refreshSplashImage)
         return
 
     newImage = ImageTk.PhotoImage(Image.open(io.BytesIO(cache)))
     viewer['image'] = newImage
     viewer.image = newImage
-    wallpaper_window.after(updateInterval, refreshSplashImage)
+    print(f"refresh rate: {updateInterval * 60 / 1000} seconds.")
+    wallpaper_window.after((updateInterval * 60), refreshSplashImage)
 
 try:
     wallpaper_window = Tk()
