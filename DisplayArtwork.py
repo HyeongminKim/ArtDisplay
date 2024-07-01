@@ -1,6 +1,7 @@
 wallpaper_window = None
 viewer = None
 status = None
+job = None
 
 try:
     import platform
@@ -62,28 +63,45 @@ def downloadSplashSource():
         return None
 
 def refreshSplashImage():
+    global job
+
     cache = downloadSplashSource()
     if cache is None:
         print("error: unable to cast type None to Object")
         if updateInterval < 5000:
             print(f"refresh rate: 5 seconds.")
-            wallpaper_window.after(5000, refreshSplashImage)
+            job = wallpaper_window.after(5000, refreshSplashImage)
         else:
             print(f"refresh rate: {updateInterval / 1000} seconds.")
-            wallpaper_window.after(updateInterval, refreshSplashImage)
+            job = wallpaper_window.after(updateInterval, refreshSplashImage)
         return
 
     newImage = ImageTk.PhotoImage(Image.open(io.BytesIO(cache)))
     viewer['image'] = newImage
     viewer.image = newImage
     print(f"refresh rate: {updateInterval * 60 / 1000} seconds.")
-    wallpaper_window.after((updateInterval * 60), refreshSplashImage)
+    job = wallpaper_window.after((updateInterval * 60), refreshSplashImage)
+
+def exitProgram(event):
+    wallpaper_window.quit()
+
+def reloadImage(event):
+    global job
+    if job is not None:
+        wallpaper_window.after_cancel(job)
+        job = None
+    refreshSplashImage()
 
 try:
     wallpaper_window = Tk()
     wallpaper_window.geometry("1024x768")
     wallpaper_window.title("")
     wallpaper_window.config(cursor="none")
+
+    wallpaper_window.bind('<Control-w>', exitProgram)
+    wallpaper_window.bind('<Control-q>', exitProgram)
+    wallpaper_window.bind('<Control-c>', exitProgram)
+    wallpaper_window.bind('<Control-r>', reloadImage)
 except (TclError) as error:
     print(f'{error}. Please update $DISPLAY variable like ":0.0" and make sure get-default is graphical.target')
     exit(1)
